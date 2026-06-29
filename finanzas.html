@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis Finanzas</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font-family:Arial,sans-serif;min-height:100vh}
+.nav{display:flex;background:#111;border-bottom:2px solid #1a8a3c;overflow-x:auto}
+.nav button{padding:12px 16px;background:none;border:none;color:#aaa;cursor:pointer;font-size:13px;white-space:nowrap}
+.nav button.active{color:#1a8a3c;border-bottom:2px solid #1a8a3c}
+.page{display:none;padding:16px}
+.page.active{display:block}
+.card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:16px;margin-bottom:12px}
+.green{color:#1a8a3c}
+.red{color:#e53935}
+.yellow{color:#f9a825}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big-num{font-size:28px;font-weight:bold}
+.label{font-size:12px;color:#aaa;margin-bottom:4px}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold}
+.btn-green{background:#1a8a3c;color:#fff}
+.btn-red{background:#e53935;color:#fff}
+input,select,textarea{width:100%;padding:10px;background:#222;border:1px solid #333;border-radius:8px;color:#fff;font-size:14px;margin-bottom:10px}
+.progress-bar{background:#222;border-radius:999px;height:20px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#1a8a3c,#4caf50);transition:width .5s}
+.tag{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;margin:2px}
+</style>
+</head>
+<body>
+<div class="nav">
+<button class="active" onclick="show('inicio')">🏠 Inicio</button>
+<button onclick="show('ingresos')">💰 Ingresos</button>
+<button onclick="show('gastos')">💸 Gastos</button>
+<button onclick="show('ahorro')">🐷 Ahorro</button>
+<button onclick="show('presupuesto')">📋 Presupuesto</button>
+<button onclick="show('graficos')">📊 Gráficos</button>
+<button onclick="show('calendario')">📅 Calendario</button>
+</div>
+
+<!-- INICIO -->
+<div id="inicio" class="page active">
+<div class="card">
+<div class="label">Balance actual</div>
+<div class="big-num green" id="balance-display">RD$ 0</div>
+</div>
+<div class="grid2">
+<div class="card">
+<div class="label">Gastado hoy</div>
+<div class="big-num red" id="hoy-display">RD$ 0</div>
+</div>
+<div class="card">
+<div class="label">Gastado este mes</div>
+<div class="big-num yellow" id="mes-display">RD$ 0</div>
+</div>
+</div>
+<div class="card">
+<div class="label">Meta RD$ 60,000</div>
+<div class="progress-bar"><div class="progress-fill" id="meta-bar" style="width:0%"></div></div>
+<div style="display:flex;justify-content:space-between;font-size:13px">
+<span id="meta-pct">0%</span><span id="meta-saved">RD$ 0 / 60,000</span>
+</div>
+</div>
+<div class="card" id="alerta-box" style="display:none;border-color:#f9a825">
+<div class="yellow" id="alerta-msg">⚠ Alerta de presupuesto</div>
+</div>
+<div class="card">
+<div class="label" style="margin-bottom:8px">Registrar gasto rápido</div>
+<input type="number" id="q-monto" placeholder="Monto RD$">
+<select id="q-cat"></select>
+<input type="text" id="q-nota" placeholder="Nota (opcional)">
+<button class="btn btn-red" style="width:100%" onclick="quickGasto()">+ Registrar gasto</button>
+</div>
+<div class="card">
+<div class="label" style="margin-bottom:8px">Últimos 5 gastos</div>
+<div id="ultimos-gastos"></div>
+</div>
+</div>
+
+<!-- INGRESOS -->
+<div id="ingresos" class="page">
+<div class="card">
+<div class="label">Total ingresos registrados</div>
+<div class="big-num green" id="total-ingresos">RD$ 0</div>
+</div>
+<div class="card">
+<div class="label" style="margin-bottom:8px">Agregar ingreso</div>
+<input type="number" id="ing-monto" placeholder="Monto RD$">
+<input type="text" id="ing-desc" placeholder="Descripción (ej: salario junio)">
+<input type="date" id="ing-fecha">
+<button class="btn btn-green" style="width:100%" onclick="addIngreso()">+ Agregar ingreso</button>
+</div>
+<div class="card">
+<div class="label" style="margin-bottom:8px">Historial de ingresos</div>
+<div id="lista-ingresos"></div>
+</div>
+</div>
+
+<!-- GASTOS -->
+<div id="gastos" class="page">
+<div class="grid2">
+<div class="card"><div class="label">Hoy</div><div class="big-num red" id="g-hoy">RD$ 0</div></div>
+<div class="card"><div class="label">Esta semana</div><div class="big-num yellow" id="g-semana">RD$ 0</div></div>
+</div>
+<div class="card"><div class="label">Este mes</div><div class="big-num red" id="g-mes">RD$ 0</div></div>
+<div class="card">
+<div class="label" style="margin-bottom:8px">Agregar gasto</div>
+<input type="number" id="g-monto" placeholder="Monto RD$">
+<select id="g-cat"></select>
+<input type="text" id="g-nota" placeholder="Nota (opcional)">
+<input type="date" id="g-fecha">
+<button class="btn btn-red" style="width:100%;margin-top:4px" onclick="addGasto()">+ Registrar gasto</button>
+</div>
+<div class="card">
+<div class="label" style="margin-bottom:8px">Historial completo</div>
+<div id="lista-gastos"></div>
+</div>
+</div>
+
+<!-- AHORRO -->
+<div id="ahorro" class="page">
+<div class="card">
+<div class="label">Meta RD$ 60,000</div>
+<div class="progress-bar" style="height:30px"><div class="progress-fill" id="ahorro-bar" style="width:0%"></div></div>
+<div style="text-align:center;margin-top:8px">
+<span class="big-num green" id="ahorro-num">RD$ 0</span>
+<span style="color:#aaa"> / RD$ 60,000</span>
+</div>
+<div style="text-align:center;color:#aaa;margin-top:4px" id="ahorro-faltan">Faltan RD$ 60,000</div>
+</div>
+<div class="card">
+<div class="label" style="margin-bottom:8px">Mover dinero a ahorros</div>
+<input type="number" id="sav-monto" placeholder="¿Cuánto quieres guardar?">
+<div style="display:flex;gap:8px;margin-bottom:10px">
+<button class="btn btn-green" style="flex:1" onclick="setSav(500)">+500</button>
+<button class="btn btn-green" style="flex:1" onclick="setSav(1000)">+1K</button>
+<button class="btn btn-green" style="flex:1" onclick="setSav(2500)">+2.5K</button>
+</div>
+<button class="btn btn-green" style="width:100%" onclick="addAhorro()">Guardar en meta</button>
+</div>
+<div class="card">
+<div class="label" style="margin-bottom:8px">Proyección a diciembre</div>
+<div id="proyeccion"></div>
+</div>
+</div>
+
+<!-- PRESUPUESTO -->
+<div id="presupuesto" class="page">
+<div class="card">
+<div class="label">Salario mensual</div>
+<div class="big-num green">RD$ 23,000</div>
+</div>
+<div class="card">
+<div style="font-size:15px;font-weight:bold;margin-bottom:10px">Compromisos fijos</div>
+<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a"><span>Diezmo (10%)</span><span class="red">-RD$ 1,050</span></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a"><span>Universidad (día 15)</span><span class="red">-RD$ 3,500</span></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a"><span>Laptop / Ciberseguridad</span><span class="red">-RD$ 5,000</span></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:bold"><span>Total fijos</span><span class="red">-RD$ 9,550</span></div>
+</div>
+<div class="card" style="border-color:#1a8a3c">
+<div class="label">Disponible para vivir y ahorrar</div>
+<div class="big-num green">RD$ 13,450</div>
+</div>
+<div class="card" style="border-color:#f9a825">
+<div class="label">⚠ Solo julio 20 — inscripción ciberseguridad</div>
+<div style="color:#f9a825;font-size:18px;font-weight:bold">-RD$ 2,500 extra ese día</div>
+</div>
+</div>
+
+<!-- GRÁFICOS -->
+<div id="graficos" class="page">
+<div class="card">
+<div class="label" style="margin-bottom:8px">Gastos por categoría</div>
+<canvas id="chart-cat" height="220"></canvas>
+</div>
+<div class="card">
+<div class="label" style="margin-bottom:8px">Gastos por semana</div>
+<canvas id="chart-sem" height="180"></canvas>
+</div>
+<div class="card">
+<div class="label" style="margin-bottom:8px">Ingresos vs Gastos por mes</div>
+<canvas id="chart-mes" height="180"></canvas>
+</div>
+</div>
+
+<!-- CALENDARIO -->
+<div id="calendario" class="page">
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<button class="btn btn-green" onclick="cambiarMes(-1)">◀</button>
+<div class="label" id="cal-titulo" style="font-size:16px;color:#fff"></div>
+<button class="btn btn-green" onclick="cambiarMes(1)">▶</button>
+</div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center" id="cal-grid"></div>
+</div>
+<div class="card">
+<div class="label" id="cal-detalle-titulo">Selecciona un día</div>
+<div id="cal-detalle"></div>
+</div>
+</div>
+
+<script>
+let D={balance:300,savings:0,gastos:[],ingresos:[],cats:['Comida','Transporte','Universidad','Laptop','Diezmo','Ciberseguridad','MMA/Gym','Salud','Ropa','Entretenimiento','Servicios del hogar','Otros'],calMes:new Date().getMonth(),calYear:new Date().getFullYear()};
+function load(){try{const r=localStorage.getItem('finv1');if(r)D={...D,...JSON.parse(r)}}catch(e){}init()}
+function save(){localStorage.setItem('finv1',JSON.stringify(D))}
+function fmt(n){return'RD$ '+Math.round(n).toLocaleString('es-DO')}
+function today(){return new Date().toISOString().slice(0,10)}
+function show(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');event.target.classList.add('active');refresh()}
+function init(){
+  fillCats();
+  document.getElementById('g-fecha').value=today();
+  document.getElementById('ing-fecha').value=today();
+  refresh();
+}
+function fillCats(){
+  ['q-cat','g-cat'].forEach(id=>{
+    const s=document.getElementById(id);
+    s.innerHTML=D.cats.map(c=>`<option>${c}</option>`).join('');
+  });
+}
+function refresh(){
+  const hoy=today();
+  const semI=new Date();semI.setDate(semI.getDate()-semI.getDay());
+  const mes=hoy.slice(0,7);
+  const gHoy=D.gastos.filter(g=>g.fecha===hoy).reduce((s,g)=>s+g.monto,0);
+  const gSem=D.gastos.filter(g=>new Date(g.fecha)>=semI).reduce((s,g)=>s+g.monto,0);
+  const gMes=D.gastos.filter(g=>g.fecha.startsWith(mes)).reduce((s,g)=>s+g.monto,0);
+  const pct=Math.min(100,(D.savings/60000)*100);
+  document.getElementById('balance-display').textContent=fmt(D.balance);
+  document.getElementById('hoy-display').textContent=fmt(gHoy);
+  document.getElementById('mes-display').textContent=fmt(gMes);
+  document.getElementById('g-hoy').textContent=fmt(gHoy);
+  document.getElementById('g-semana').textContent=fmt(gSem);
+  document.getElementById('g-mes').textContent=fmt(gMes);
+  document.getElementById('meta-bar').style.width=pct+'%';
+  document.getElementById('meta-pct').textContent=pct.toFixed(1)+'%';
+  document.getElementById('meta-saved').textContent=fmt(D.savings)+' / 60,000';
+  document.getElementById('ahorro-bar').style.width=pct+'%';
+  document.getElementById('ahorro-num').textContent=fmt(D.savings);
+  document.getElementById('ahorro-faltan').textContent='Faltan '+fmt(Math.max(0,60000-D.savings));
+  const tIng=D.ingresos.reduce((s,i)=>s+i.monto,0);
+  document.getElementById('total-ingresos').textContent=fmt(tIng);
+  alertas(gMes);
+  renderListas();
+  renderProyeccion();
+  renderCalendario();
+  renderGraficos();
+}
+function alertas(gMes){
+  const libre=13450;const pct=gMes/libre*100;
+  const box=document.getElementById('alerta-box');
+  const msg=document.getElementById('alerta-msg');
+  if(pct>=100){box.style.display='block';box.style.borderColor='#e53935';msg.textContent='🚨 100% — agotaste tu presupuesto variable'}
+  else if(pct>=80){box.style.display='block';box.style.borderColor='#e53935';msg.textContent='🔴 80% — cuidado con los gastos'}
+  else if(pct>=50){box.style.display='block';box.style.borderColor='#f9a825';msg.textContent='🟡 50% — vas a mitad del presupuesto'}
+  else{box.style.display='none'}
+}
+function renderListas(){
+  const ug=D.gastos.slice(-5).reverse().map(g=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a2a2a"><div><span class="tag" style="background:#1a3a2a;color:#1a8a3c">${g.cat}</span>${g.nota?'<span style="color:#aaa;font-size:12px"> '+g.nota+'</span>':''}</div><span class="red">-${fmt(g.monto)}</span></div>`).join('');
+  document.getElementById('ultimos-gastos').innerHTML=ug||'<span style="color:#aaa">Sin gastos aún</span>';
+  const lg=D.gastos.slice().reverse().map((g,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #2a2a2a"><div><div style="font-size:13px">${g.fecha} — <span class="tag" style="background:#1a3a2a;color:#1a8a3c">${g.cat}</span></div>${g.nota?'<div style="color:#aaa;font-size:12px">'+g.nota+'</div>':''}</div><div style="display:flex;align-items:center;gap:8px"><span class="red">-${fmt(g.monto)}</span><button onclick="delGasto(${D.gastos.length-1-i})" style="background:#e53935;border:none;color:#fff;border-radius:6px;padding:2px 8px;cursor:pointer">✕</button></div></div>`).join('');
+  document.getElementById('lista-gastos').innerHTML=lg||'<span style="color:#aaa">Sin gastos</span>';
+  const li=D.ingresos.slice().reverse().map((g,i)=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a"><div><div>${g.desc}</div><div style="color:#aaa;font-size:12px">${g.fecha}</div></div><span class="green">+${fmt(g.monto)}</span></div>`).join('');
+  document.getElementById('lista-ingresos').innerHTML=li||'<span style="color:#aaa">Sin ingresos</span>';
+}
+function renderProyeccion(){
+  const meses=['Jul','Ago','Sep','Oct','Nov','Dic'];
+  let acu=D.savings;
+  const html=meses.map((m,i)=>{
+    let extra=i===0?-2500:0;
+    let bonus=i===5?23000:0;
+    const save=Math.max(0,13450+extra+bonus-6500);
+    acu+=save;
+    const ok=acu>=60000;
+    return`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #2a2a2a"><span>${m}${i===5?' 🎉':''}</span><span style="color:${ok?'#1a8a3c':'#f9a825'}">${fmt(acu)}</span></div>`;
+  }).join('');
+  document.getElementById('proyeccion').innerHTML=html;
+}
+function renderCalendario(){
+  const y=D.calYear,m=D.calMes;
+  const dias=['Do','Lu','Ma','Mi','Ju','Vi','Sa'];
+  const primerDia=new Date(y,m,1).getDay();
+  const totalDias=new Date(y,m+1,0).getDate();
+  const mNom=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-titulo').textContent=mNom[m]+' '+y;
+  let html=dias.map(d=>`<div style="color:#aaa;font-size:11px;padding:4px 0">${d}</div>`).join('');
+  for(let i=0;i<primerDia;i++)html+='<div></div>';
+  for(let d=1;d<=totalDias;d++){
+    const fecha=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const tot=D.gastos.filter(g=>g.fecha===fecha).reduce((s,g)=>s+g.monto,0);
+    const isHoy=fecha===today();
+    const col=tot>0?(tot>2000?'#e53935':tot>500?'#f9a825':'#1a8a3c'):'#333';
+    html+=`<div onclick="verDia('${fecha}')" style="background:${col};border-radius:6px;padding:4px 2px;cursor:pointer;font-size:12px;text-align:center;${isHoy?'border:2px solid #fff':''}"><div>${d}</div>${tot>0?'<div style="font-size:9px">'+Math.round(tot/1000)+'K</div>':''}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+}
+function verDia(fecha){
+  const gs=D.gastos.filter(g=>g.fecha===fecha);
+  document.getElementById('cal-detalle-titulo').textContent='Gastos del '+fecha;
+  document.getElementById('cal-detalle').innerHTML=gs.length?gs.map(g=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a2a2a"><span>${g.cat}${g.nota?' — '+g.nota:''}</span><span class="red">-${fmt(g.monto)}</span></div>`).join(''):'<span style="color:#aaa">Sin gastos ese día</span>';
+}
+function cambiarMes(d){D.calMes+=d;if(D.calMes>11){D.calMes=0;D.calYear++}if(D.calMes<0){D.calMes=11;D.calYear--}renderCalendario()}
+function renderGraficos(){
+  renderPie();renderBarSem();renderBarMes();
+}
+function renderPie(){
+  const canvas=document.getElementById('chart-cat');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const totales={};D.cats.forEach(c=>{totales[c]=D.gastos.filter(g=>g.cat===c).reduce((s,g)=>s+g.monto,0)});
+  const data=Object.entries(totales).filter(([,v])=>v>0);
+  if(!data.length){ctx.fillStyle='#aaa';ctx.font='14px Arial';ctx.fillText('Sin datos aún',10,50);return}
+  const total=data.reduce((s,[,v])=>s+v,0);
+  const cols=['#1a8a3c','#4caf50','#f9a825','#e53935','#2196f3','#9c27b0','#ff5722','#00bcd4','#795548','#607d8b','#e91e63','#8bc34a'];
+  let ang=-Math.PI/2;const cx=canvas.width/2,cy=90,r=70;
+  data.forEach(([k,v],i)=>{const slice=2*Math.PI*v/total;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,ang,ang+slice);ctx.fillStyle=cols[i%cols.length];ctx.fill();ang+=slice});
+  let y=175;data.forEach(([k,v],i)=>{ctx.fillStyle=cols[i%cols.length];ctx.fillRect(10,y-10,12,12);ctx.fillStyle='#fff';ctx.font='11px Arial';ctx.fillText(`${k}: ${fmt(v)} (${(v/total*100).toFixed(1)}%)`,28,y);y+=18});
+}
+function renderBarSem(){
+  const canvas=document.getElementById('chart-sem');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const semanas=['Sem 1','Sem 2','Sem 3','Sem 4'];
+  const mes=new Date().toISOString().slice(0,7);
+  const vals=semanas.map((_,i)=>D.gastos.filter(g=>{if(!g.fecha.startsWith(mes))return false;const d=new Date(g.fecha).getDate();return d>i*7&&d<=(i+1)*7}).reduce((s,g)=>s+g.monto,0));
+  const max=Math.max(...vals,1);
+  const W=canvas.width,H=canvas.height,pad=30,bw=(W-pad*2)/4-8;
+  ctx.fillStyle='#aaa';ctx.font='11px Arial';
+  vals.forEach((v,i)=>{
+    const x=pad+i*(bw+8);const h=(v/max)*(H-50);const y=H-30-h;
+    ctx.fillStyle='#1a8a3c';ctx.fillRect(x,y,bw,h);
+    ctx.fillStyle='#fff';ctx.font='10px Arial';ctx.fillText(semanas[i],x,H-10);
+    if(v>0)ctx.fillText(Math.round(v/1000)+'K',x,y-4);
+  });
+}
+function renderBarMes(){
+  const canvas=document.getElementById('chart-mes');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const meses=[];for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);meses.push(d.toISOString().slice(0,7))}
+  const ing=meses.map(m=>D.ingresos.filter(i=>i.fecha.startsWith(m)).reduce((s,i)=>s+i.monto,0));
+  const gas=meses.map(m=>D.gastos.filter(g=>g.fecha.startsWith(m)).reduce((s,g)=>s+g.monto,0));
+  const max=Math.max(...ing,...gas,1);
+  const W=canvas.width,H=canvas.height,pad=20,bw=(W-pad*2)/6/2-4;
+  meses.forEach((m,i)=>{
+    const x=pad+i*(W-pad*2)/6;
+    const hi=(ing[i]/max)*(H-40);const hg=(gas[i]/max)*(H-40);
+    ctx.fillStyle='#1a8a3c';ctx.fillRect(x,H-30-hi,bw,hi);
+    ctx.fillStyle='#e53935';ctx.fillRect(x+bw+2,H-30-hg,bw,hg);
+    ctx.fillStyle='#aaa';ctx.font='9px Arial';ctx.fillText(m.slice(5),x,H-10);
+  });
+  ctx.fillStyle='#1a8a3c';ctx.fillRect(10,10,10,10);ctx.fillStyle='#fff';ctx.font='11px Arial';ctx.fillText('Ingresos',24,20);
+  ctx.fillStyle='#e53935';ctx.fillRect(90,10,10,10);ctx.fillText('Gastos',104,20);
+}
+function quickGasto(){
+  const m=parseFloat(document.getElementById('q-monto').value);
+  if(!m||m<=0)return;
+  D.gastos.push({monto:m,cat:document.getElementById('q-cat').value,nota:document.getElementById('q-nota').value,fecha:today()});
+  D.balance-=m;
+  document.getElementById('q-monto').value='';
+  document.getElementById('q-nota').value='';
+  save();refresh();
+}
+function addGasto(){
+  const m=parseFloat(document.getElementById('g-monto').value);
+  const f=document.getElementById('g-fecha').value;
+  if(!m||m<=0||!f)return;
+  D.gastos.push({monto:m,cat:document.getElementById('g-cat').value,nota:document.getElementById('g-nota').value,fecha:f});
+  D.balance-=m;
+  document.getElementById('g-monto').value='';
+  document.getElementById('g-nota').value='';
+  save();refresh();
+}
+function delGasto(i){D.balance+=D.gastos[i].monto;D.gastos.splice(i,1);save();refresh()}
+function addIngreso(){
+  const m=parseFloat(document.getElementById('ing-monto').value);
+  const f=document.getElementById('ing-fecha').value;
+  if(!m||m<=0)return;
+  D.ingresos.push({monto:m,desc:document.getElementById('ing-desc').value||'Ingreso',fecha:f||today()});
+  D.balance+=m;
+  document.getElementById('ing-monto').value='';
+  document.getElementById('ing-desc').value='';
+  save();refresh();
+}
+function addAhorro(){
+  const m=parseFloat(document.getElementById('sav-monto').value);
+  if(!m||m<=0||m>D.balance)return;
+  D.savings+=m;D.balance-=m;
+  document.getElementById('sav-monto').value='';
+  save();refresh();
+}
+function setSav(n){document.getElementById('sav-monto').value=n}
+load();
+</script>
+</body>
+</html>
